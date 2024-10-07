@@ -1,4 +1,4 @@
-# voyager - Drag-and-Drop Drone Instruction Application
+# Voyager - Drone Programming Application
 
 ## Overview
 
