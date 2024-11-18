@@ -44,8 +44,8 @@ const CommandPrompt: React.FC = () => {
       let newItems = [...prevItems];
 
       // Clear the input values for the item being deleted
-      newItems[index].inputValue1 = ''; // Assuming inputValue1 exists
-      newItems[index].inputValue2 = ''; // Assuming inputValue2 exists (if applicable)
+      newItems[index].inputValue1 = null; // Assuming inputValue1 exists
+      newItems[index].inputValue2 = null; // Assuming inputValue2 exists (if applicable)
 
       // Remove the item from the array
       newItems = newItems.filter((_, i) => i !== index);
