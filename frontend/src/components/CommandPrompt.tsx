@@ -1,63 +1,51 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import InstructionButton from './InstructionButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { v4 as uuidv4 } from 'uuid';
 
 const CommandPrompt: React.FC = () => {
-  const [droppedItems, setDroppedItems] = useState<any[]>([]); // State to hold dropped items
-  const [highlightIndex, setHighlightIndex] = useState<number | null>(null); // Track where to drop
+  const [droppedItems, setDroppedItems] = useState<any[]>([]);
+  const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); // Prevent default behavior
-
-    const data = e.dataTransfer.getData('application/json'); // Get the dropped data
+    e.preventDefault();
+    const data = e.dataTransfer.getData('application/json');
     if (data) {
-      const buttonData = JSON.parse(data); // Parse the JSON string into an object
+      const buttonData = JSON.parse(data);
+      // Add a unique ID to the button data
+      const newButton = { ...buttonData, id: uuidv4() };
       if (highlightIndex !== null) {
-        // Insert at the highlighted position
         setDroppedItems((prevItems) => {
           const newItems = [...prevItems];
-          newItems.splice(highlightIndex, 0, buttonData); // Insert at the index
-          newItems[highlightIndex]['inputValue1'] = buttonData['inputValue1'];
-          console.log(newItems)
+          newItems.splice(highlightIndex, 0, newButton);
           return newItems;
         });
       } else {
-        setDroppedItems((prevItems) => [...prevItems, buttonData]); // Fallback to appending at the end
+        setDroppedItems((prevItems) => [...prevItems, newButton]);
       }
     }
-    setHighlightIndex(null); // Reset highlight after drop
+    setHighlightIndex(null);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
-    e.preventDefault(); // Allow drop
-    setHighlightIndex(index); // Set the current hover index
+    e.preventDefault();
+    setHighlightIndex(index);
   };
 
   const handleDragLeave = () => {
-    setHighlightIndex(null); // Reset highlight when leaving the target area
+    setHighlightIndex(null);
   };
 
-  const handleDelete = (index: number) => {
+  const handleDelete = (id: string) => {
     setDroppedItems((prevItems) => {
-      // Create a copy of the current items
-      let newItems = [...prevItems];
-
-      // Clear the input values for the item being deleted
-      newItems[index].inputValue1 = null; // Assuming inputValue1 exists
-      newItems[index].inputValue2 = null; // Assuming inputValue2 exists (if applicable)
-
-      // Remove the item from the array
-      newItems = newItems.filter((_, i) => i !== index);
-
-      console.log(newItems); // Log the new state of items
-      return newItems;
+      // Remove the item from the array based on ID
+      return prevItems.filter((item) => item.id !== id);
     });
   };
 
   useEffect(() => {
     console.log('droppedItems updated:', droppedItems);
-    // Add any other logic you need to execute after updating droppedItems
   }, [droppedItems]);
 
   return (
@@ -67,11 +55,11 @@ const CommandPrompt: React.FC = () => {
     >
       <h2 className="text-lg font-bold">Command Prompt</h2>
       <div className="flex flex-col gap-2">
-        {droppedItems.map((item, index) => (
+        {droppedItems.map((item) => (
           <div
-            key={index}
-            className={`flex flex-row gap-2 ${highlightIndex === index ? 'border-t-2 border-blue-500' : ''}`} // Highlight if this is the closest drop location
-            onDragOver={(e) => handleDragOver(e, index)}
+            key={item.id} // Use the unique ID as the key
+            className={`flex flex-row gap-2 ${highlightIndex === item.index ? 'border-t-2 border-blue-500' : ''}`}
+            onDragOver={(e) => handleDragOver(e, item.index)}
             onDragLeave={handleDragLeave}
           >
             <InstructionButton
@@ -84,12 +72,11 @@ const CommandPrompt: React.FC = () => {
               input1={item.inputValue1}
               input2={item.inputValue2}
             />
-            <button className="w-3" onClick={() => handleDelete(index)}>
+            <button className="w-3" onClick={() => handleDelete(item.id)}>
               <FontAwesomeIcon icon={faTrashAlt} />
             </button>
           </div>
         ))}
-        {/* Add a final drop zone at the end */}
         <div
           className={`flex flex-row gap-2 ${highlightIndex === droppedItems.length ? 'border-t-2 border-blue-500' : ''}`}
           onDragOver={(e) => handleDragOver(e, droppedItems.length)}
